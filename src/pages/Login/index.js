@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
+import { ActivityIndicator } from 'react-native';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import * as LoginActions from '../../store/actions/login';
-
-import api from '../../services/api';
 
 import { Container, Input, Button, TextBtn, ErrorMsg } from './styles';
 
@@ -15,21 +14,15 @@ class Login extends Component {
 
   handleSubmit = async () => {
     const { username } = this.state;
-    const { loginSuccess, loginFailure, navigation } = this.props;
-    try {
-      await api.get(`/users/${username}`);
+    const { loginRequest } = this.props;
 
-      loginSuccess(username);
-
-      navigation.navigate('Repositories');
-    } catch (error) {
-      loginFailure();
-    }
+    loginRequest(username);
   };
 
   render() {
     const { username } = this.state;
-    const { error } = this.props;
+    const { error, loading } = this.props;
+
     return (
       <Container>
         {error && <ErrorMsg>Usuário inexistente</ErrorMsg>}
@@ -41,7 +34,11 @@ class Login extends Component {
           onChangeText={text => this.setState({ username: text })}
         />
         <Button onPress={this.handleSubmit}>
-          <TextBtn>Entrar</TextBtn>
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <TextBtn>Entrar</TextBtn>
+          )}
         </Button>
       </Container>
     );
@@ -50,6 +47,7 @@ class Login extends Component {
 
 const mapStateToProps = state => ({
   error: state.login.error,
+  loading: state.login.loading,
 });
 
 const mapDispatchToProps = dispatch =>
